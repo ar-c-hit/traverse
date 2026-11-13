@@ -29,7 +29,8 @@ import {
   UserPlus,
   Search,
   Users,
-  Copy
+  Copy,
+  ArrowRight
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import TripCard from '../components/TripCard';

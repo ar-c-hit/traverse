@@ -43,13 +43,24 @@ class ErrorBoundary extends React.Component {
             </button>
             <Link
               to="/"
-              onClick={() => this.setState({ hasError: false })}
+              onClick={() => this.setState({ hasError: false, error: null })}
               className="px-6 py-3 rounded-2xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs flex items-center gap-2 border border-slate-700 transition-colors"
             >
               <Home className="w-4 h-4" />
               <span>Back to Home</span>
             </Link>
           </div>
+
+          {this.state.error && (
+            <details className="mt-6 text-left max-w-lg w-full bg-slate-900/90 border border-slate-800 rounded-2xl p-4 text-xs text-rose-300 font-mono">
+              <summary className="cursor-pointer text-slate-400 font-bold hover:text-slate-200">
+                Diagnostic Details
+              </summary>
+              <p className="whitespace-pre-wrap break-all mt-2 text-[11px] text-rose-400">
+                {this.state.error.toString()}
+              </p>
+            </details>
+          )}
         </div>
       );
     }

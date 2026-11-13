@@ -25,7 +25,8 @@ import {
   CheckCircle2,
   Camera,
   Coffee,
-  Plus
+  Plus,
+  X
 } from 'lucide-react';
 import { useChat } from '../context/ChatContext';
 import { useAuth } from '../context/AuthContext';

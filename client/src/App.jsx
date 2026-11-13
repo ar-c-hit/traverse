@@ -24,19 +24,21 @@ import Login from './pages/Login';
 import Signup from './pages/Signup';
 import Profile from './pages/Profile';
 import AdminDashboard from './pages/AdminDashboard';
+import ErrorBoundary from './components/ErrorBoundary';
 
 function App() {
   return (
     <BrowserRouter>
       <ScrollToTop />
-      <ThemeProvider>
-        <AuthProvider>
-          <ChatProvider>
-            <NotificationProvider>
-              <div className="flex flex-col min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 selection:bg-brand-500 selection:text-white transition-colors duration-200">
-                <Navbar />
-                <NotificationToast />
-                <main className="flex-1">
+      <ErrorBoundary>
+        <ThemeProvider>
+          <AuthProvider>
+            <ChatProvider>
+              <NotificationProvider>
+                <div className="flex flex-col min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 selection:bg-brand-500 selection:text-white transition-colors duration-200">
+                  <Navbar />
+                  <NotificationToast />
+                  <main className="flex-1">
               <Routes>
                 {/* Public General Pages */}
                 <Route path="/" element={<Home />} />
@@ -85,6 +87,7 @@ function App() {
       </ChatProvider>
     </AuthProvider>
     </ThemeProvider>
+    </ErrorBoundary>
   </BrowserRouter>
   );
 }

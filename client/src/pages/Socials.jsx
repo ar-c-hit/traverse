@@ -136,7 +136,7 @@ const Socials = () => {
   const hasActiveChat = Boolean(activePartner || selectedChannel);
 
   // Select a 1-on-1 DM partner
-  const selectPartner = (partner) => {
+  const selectPartner = (partner, updateUrl = true) => {
     if (!partner) return;
     const pId = getPartnerId(partner);
     if (!pId) return;
@@ -144,7 +144,11 @@ const Socials = () => {
     const normalized = {
       ...partner,
       partnerId: pId,
-      _id: pId
+      _id: pId,
+      name: partner.name || 'Traveler',
+      username: partner.username || partner.email?.split('@')[0] || 'wanderer',
+      avatar: partner.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80',
+      badge: partner.badge || (partner.role === 'admin' ? 'PRO' : 'EXPLORER')
     };
 
     setSelectedChannel(null);
@@ -162,7 +166,18 @@ const Socials = () => {
       const u2 = pId;
       const dmChannelName = `dm_${[u1, u2].sort().join('_')}`;
       changeChannel(dmChannelName);
-      setSearchParams({ dm: pId });
+    } else {
+      changeChannel(`dm_guest_${pId}`);
+    }
+
+    if (updateUrl) {
+      setSearchParams(prev => {
+        if (prev.get('dm') === pId) return prev;
+        const next = new URLSearchParams(prev);
+        next.delete('channel');
+        next.set('dm', pId);
+        return next;
+      });
     }
   };
 
@@ -172,14 +187,26 @@ const Socials = () => {
     setSelectedChannel(chanId);
     setSocialMode('channels');
     changeChannel(chanId);
-    setSearchParams({ channel: chanId });
+    setSearchParams(prev => {
+      if (prev.get('channel') === chanId && !prev.get('dm')) return prev;
+      const next = new URLSearchParams(prev);
+      next.delete('dm');
+      next.set('channel', chanId);
+      return next;
+    });
   };
 
   // Close active chat and return to overview
   const closeChat = () => {
     setActivePartner(null);
     setSelectedChannel(null);
-    setSearchParams({});
+    setSearchParams(prev => {
+      if (!prev.get('dm') && !prev.get('channel')) return prev;
+      const next = new URLSearchParams(prev);
+      next.delete('dm');
+      next.delete('channel');
+      return next;
+    });
   };
 
   // Fetch direct conversations
@@ -256,11 +283,10 @@ const Socials = () => {
         const dmChannelName = `dm_${[u1, u2].sort().join('_')}`;
         if (currentChannel !== dmChannelName) {
           changeChannel(dmChannelName);
-          setSearchParams({ dm: pId });
         }
       }
     }
-  }, [user, activePartner]);
+  }, [user, activePartner, currentChannel, changeChannel]);
 
   // Respond to incoming direct messages by updating conversation list in real-time
   useEffect(() => {
@@ -289,40 +315,92 @@ const Socials = () => {
     });
   }, [directMessageUpdate, user]);
 
-  // Handle URL dmParam (?dm=userId)
+  // Handle URL dmParam (?dm=userId) without infinite loops
   useEffect(() => {
     if (!dmParam) return;
     const activeId = getPartnerId(activePartner);
     if (activeId === dmParam) return;
 
-    const match = conversations.find(c => getPartnerId(c) === dmParam);
-    if (match) {
-      selectPartner(match);
+    // 1. Check if already in conversations, friends, or directory
+    const existing = 
+      conversations.find(c => getPartnerId(c) === dmParam) ||
+      friends.find(f => getPartnerId(f) === dmParam) ||
+      directory.find(d => getPartnerId(d) === dmParam);
+
+    if (existing) {
+      selectPartner(existing, false);
       return;
     }
 
-    // Partner not in conversations list yet; fetch their profile
+    // 2. Fetch user profile from API or use known traveler fallback
+    let isCancelled = false;
     fetch(`/api/auth/user/${dmParam}`, {
       headers: token ? { Authorization: `Bearer ${token}` } : {}
     })
-      .then(res => res.ok ? res.json() : null)
+      .then(res => {
+        if (!res.ok) return null;
+        const contentType = res.headers.get('content-type') || '';
+        if (!contentType.includes('application/json')) return null;
+        return res.json();
+      })
       .then(uData => {
-        if (uData) {
+        if (isCancelled) return;
+        if (uData && (uData._id || uData.name)) {
           selectPartner({
-            partnerId: uData._id,
-            _id: uData._id,
-            name: uData.name,
-            username: uData.username || uData.email?.split('@')[0],
-            avatar: uData.avatar,
-            role: uData.role,
+            partnerId: uData._id || dmParam,
+            _id: uData._id || dmParam,
+            name: uData.name || 'Traveler',
+            username: uData.username || uData.email?.split('@')[0] || 'wanderer',
+            avatar: uData.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80',
+            role: uData.role || 'traveler',
             badge: uData.badge || (uData.role === 'admin' ? 'PRO' : 'EXPLORER'),
             homeCity: uData.homeCity || 'Worldwide',
             travelStyle: uData.travelStyle || 'Wanderer'
-          });
+          }, false);
+        } else {
+          // Known demo travelers fallback
+          const demoMap = {
+            '670000000000000000000001': { name: 'Archit (Super Admin)', username: 'archit', role: 'admin', badge: 'PRO', avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=300&q=80', homeCity: 'New Delhi, India', travelStyle: 'Adventure & Expeditions' },
+            '670000000000000000000002': { name: 'Kai Tanaka', username: 'kai', role: 'traveler', badge: 'EXPLORER', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=300&q=80', homeCity: 'Tokyo, Japan', travelStyle: 'Backpacker' },
+            '670000000000000000000003': { name: 'Sofia Morales', username: 'sofia', role: 'traveler', badge: 'EXPLORER', avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=300&q=80', homeCity: 'Barcelona, Spain', travelStyle: 'Culture & Heritage' },
+            '670000000000000000000004': { name: 'Liam Vance', username: 'liam', role: 'traveler', badge: 'EXPLORER', avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=300&q=80', homeCity: 'Vancouver, Canada', travelStyle: 'Adventure & Trekking' }
+          };
+          const fallbackData = demoMap[dmParam] || {
+            name: 'Traveler',
+            username: 'traveler',
+            role: 'traveler',
+            badge: 'EXPLORER',
+            avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80',
+            homeCity: 'Worldwide',
+            travelStyle: 'Wanderer'
+          };
+          selectPartner({
+            partnerId: dmParam,
+            _id: dmParam,
+            ...fallbackData
+          }, false);
         }
       })
-      .catch(err => console.error('Error fetching direct message partner profile:', err));
-  }, [dmParam, conversations, token]);
+      .catch(() => {
+        if (!isCancelled) {
+          selectPartner({
+            partnerId: dmParam,
+            _id: dmParam,
+            name: 'Traveler',
+            username: 'traveler',
+            role: 'traveler',
+            badge: 'EXPLORER',
+            avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80',
+            homeCity: 'Worldwide',
+            travelStyle: 'Wanderer'
+          }, false);
+        }
+      });
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [dmParam, token]);
 
   // Toggle follow user from People directory
   const handleToggleFollow = async (targetUser) => {
@@ -388,20 +466,15 @@ const Socials = () => {
       return;
     }
     const targetId = getPartnerId(targetUser);
-    const isFriend = targetUser.isFriend || friends.some(f => getPartnerId(f) === targetId);
-    if (!isFriend && targetUser.role !== 'admin' && user?.role !== 'admin') {
-      alert(`You and ${targetUser.name} must follow each other to become friends before chatting!`);
-      return;
-    }
     selectPartner({
       partnerId: targetId,
-      name: targetUser.name,
-      username: targetUser.username,
-      avatar: targetUser.avatar,
-      role: targetUser.role,
-      badge: targetUser.badge,
-      homeCity: targetUser.homeCity,
-      travelStyle: targetUser.travelStyle
+      name: targetUser.name || 'Traveler',
+      username: targetUser.username || targetUser.email?.split('@')[0] || 'wanderer',
+      avatar: targetUser.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80',
+      role: targetUser.role || 'traveler',
+      badge: targetUser.badge || (targetUser.role === 'admin' ? 'PRO' : 'EXPLORER'),
+      homeCity: targetUser.homeCity || 'Worldwide',
+      travelStyle: targetUser.travelStyle || 'Wanderer'
     });
   };
 
@@ -889,11 +962,11 @@ const Socials = () => {
                             </button>
                           ) : (
                             <button
-                              onClick={() => alert(`You and ${u.name} must follow each other to become friends before chatting!`)}
-                              className="p-1.5 px-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 text-[10px] font-bold flex items-center gap-1 opacity-70 hover:opacity-100 cursor-not-allowed select-none"
-                              title="Must follow each other to chat"
+                              onClick={() => handleStartChatWithUser(u)}
+                              className="p-1.5 px-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-amber-100 dark:hover:bg-amber-950/60 text-slate-500 dark:text-slate-400 hover:text-amber-700 dark:hover:text-amber-300 text-[10px] font-bold flex items-center gap-1 cursor-pointer transition-colors"
+                              title="Open chat & follow traveler to connect"
                             >
-                              <Lock className="w-3 h-3" />
+                              <Lock className="w-3 h-3 text-amber-500" />
                               <span>Locked</span>
                             </button>
                           )}
@@ -1283,19 +1356,19 @@ const Socials = () => {
                 {activePartner && messages.length === 0 && (
                   <div className="p-8 text-center bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 space-y-3 max-w-md mx-auto my-6 shadow-sm">
                     <img
-                      src={activePartner.avatar}
-                      alt={activePartner.name}
+                      src={activePartner.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80'}
+                      alt={activePartner.name || 'Traveler'}
                       className="w-16 h-16 rounded-full object-cover mx-auto ring-4 ring-brand-100 dark:ring-brand-950/80 shadow-md"
                     />
                     <h4 className="text-sm font-black text-slate-900 dark:text-white">
-                      Start your conversation with {activePartner.name}
+                      Start your conversation with {activePartner.name || 'Traveler'}
                     </h4>
                     <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
                       Discuss route ideas, compare travel dates, share hotel recommendations, or coordinate meetups!
                     </p>
                     <div className="flex justify-center gap-2 pt-1">
                       <button
-                        onClick={() => setInputVal(`Hi ${activePartner.name.split(' ')[0]}! Love your travel route, let's sync up!`)}
+                        onClick={() => setInputVal(`Hi ${activePartner?.name ? activePartner.name.split(' ')[0] : 'there'}! Love your travel route, let's sync up!`)}
                         className="px-3 py-1.5 bg-brand-50 dark:bg-brand-950/70 text-brand-800 dark:text-brand-300 rounded-xl text-xs font-bold hover:bg-brand-100 dark:hover:bg-brand-900/60 transition-colors cursor-pointer"
                       >
                         👋 Say Hello
@@ -1415,18 +1488,18 @@ const Socials = () => {
                       <div className="flex items-center gap-2">
                         <Lock className="w-4 h-4 text-amber-600 dark:text-amber-400 flex-shrink-0" />
                         <span>
-                          Direct chat is locked. You and <strong>{activePartner.name}</strong> must follow each other to become friends and chat!
+                          Direct chat is locked. You and <strong>{activePartner?.name || 'this traveler'}</strong> must follow each other to become friends and chat!
                         </span>
                       </div>
                       <button
                         onClick={() => {
                           const found = directory.find((u) => u._id === getPartnerId(activePartner));
-                          if (found) handleToggleFollow(found);
+                          handleToggleFollow(found || activePartner);
                         }}
                         className="px-4 py-1.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs shadow-sm flex items-center gap-1.5 whitespace-nowrap cursor-pointer transition-all"
                       >
                         <UserPlus className="w-3.5 h-3.5" />
-                        <span>Follow {activePartner.name}</span>
+                        <span>Follow {activePartner?.name || 'Traveler'}</span>
                       </button>
                     </div>
                   ) : (

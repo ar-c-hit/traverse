@@ -1,0 +1,26 @@
+{
+  "name": "traverse",
+  "version": "1.0.0",
+  "description": "Traverse - Full-stack MERN Trip Planner with Global Chat and Traveler Matching",
+  "scripts": {
+    "install:server": "npm install --prefix server",
+    "install:client": "npm install --prefix client",
+    "install:all": "npm install --prefix server && npm install --prefix client",
+    "server": "node server/server.js",
+    "start": "node server/server.js",
+    "client": "npm run dev --prefix client",
+    "build": "npm run build --prefix client"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "keywords": [
+    "mern",
+    "travel",
+    "trip-planner",
+    "global-chat",
+    "community"
+  ],
+  "author": "",
+  "license": "ISC"
+}

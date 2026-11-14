@@ -11,27 +11,8 @@ const app = express();
 const server = http.createServer(app);
 
 // Allowed origins for CORS (Vercel deployments, localhost, custom domains)
-const allowedOrigins = [
-  process.env.CLIENT_URL,
-  process.env.FRONTEND_URL,
-  process.env.CLIENT_ORIGIN,
-  'http://localhost:5173',
-  'http://localhost:3000',
-  'http://localhost:5000'
-].filter(Boolean);
-
-const isOriginAllowed = (origin) => {
-  if (!origin) return true; // Allow non-browser requests (mobile, curl, postman)
-  if (allowedOrigins.includes(origin)) return true;
-  if (/^https:\/\/[\w.-]+\.vercel\.app$/.test(origin)) return true;
-  if (/^http:\/\/localhost:\d+$/.test(origin)) return true;
-  return true; // Permissive fallback to ensure production is never blocked
-};
-
 const corsOptions = {
-  origin: (origin, callback) => {
-    callback(null, isOriginAllowed(origin) ? (origin || true) : true);
-  },
+  origin: true, // Universal origin reflection with credentials for Vercel, localhost, and custom domains
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin']
@@ -40,9 +21,7 @@ const corsOptions = {
 // Setup Socket.IO with dynamic CORS for Vercel & local environments
 const io = new Server(server, {
   cors: {
-    origin: (origin, callback) => {
-      callback(null, isOriginAllowed(origin) ? (origin || true) : true);
-    },
+    origin: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     credentials: true,
   },
@@ -52,12 +31,22 @@ app.set('io', io);
 
 // Middleware
 app.use(cors(corsOptions));
-app.options('*', cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Connect Database (with automatic fallback to pre-seeded high-performance in-memory persistence)
 connectDB();
+
+// Root route (confirms service is live when hitting Render URL directly)
+app.get('/', (req, res) => {
+  res.json({
+    status: 'online',
+    platform: 'Traverse Travel Platform API Server',
+    health: '/health',
+    version: '1.0.0',
+    timestamp: new Date().toISOString()
+  });
+});
 
 // API Routes
 app.use('/api/auth', require('./routes/authRoutes'));

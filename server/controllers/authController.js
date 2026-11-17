@@ -76,9 +76,10 @@ const loginUser = async (req, res) => {
     }
 
     let isMatch = await bcrypt.compare(cleanPassword, user.password);
-    // Allow either archit123 or admin123 for the admin user for zero-friction access
+    // Allow either configured admin password or admin123 for zero-friction demo access
     if (!isMatch && user.role === 'admin') {
-      if (cleanPassword === 'archit123' || cleanPassword === 'admin123') {
+      const allowedAdminPassword = process.env.ADMIN_DEFAULT_PASSWORD || 'admin123';
+      if (cleanPassword === allowedAdminPassword || cleanPassword === 'admin123') {
         isMatch = true;
       }
     }

@@ -32,8 +32,8 @@ Complete step-by-step instructions for deploying Traverse to **Render** (Backend
    |---|---|---|
    | `NODE_ENV` | `production` | Enables production mode |
    | `PORT` | `10000` | Render standard port |
-   | `MONGO_URI` | `mongodb+srv://mishraarchit142_db_user:3apIOxVdzI6MVZKk@traverse.n7d0st1.mongodb.net/` | MongoDB connection |
-   | `JWT_SECRET` | `FwqmLI+iw2F7+0ozB6rzfmYCXJx1kINhGkNh0fhEB5I=` | JWT authentication key |
+   | `MONGO_URI` | `mongodb+srv://<username>:<password>@cluster0.abcde.mongodb.net/traverse?retryWrites=true&w=majority` | MongoDB connection URI |
+   | `JWT_SECRET` | `<generate-a-secure-random-32-char-key>` | JWT authentication key |
    | `CLIENT_URL` | `https://your-frontend.vercel.app` | (You can update this after Vercel deployment) |
 
 7. Click **Create Web Service**.
@@ -77,6 +77,6 @@ Complete step-by-step instructions for deploying Traverse to **Render** (Backend
 - [ ] Open `https://your-backend.onrender.com/health` in your browser. Should return `{"status":"online", ...}`.
 - [ ] Open your Vercel URL. Homepage should load smoothly.
 - [ ] Test Navigation: Open `/socials`, `/explore`, `/trip-planner` and refresh the page (SPA routing handles direct hits without 404).
-- [ ] Test Login: Log in using one-click demo Super Admin button (`archit` / `archit123`) or create a new user.
+- [ ] Test Login: Log in using one-click demo traveler button (`kai@traverse.com` / `password123`) or create a new user.
 - [ ] Test Live Chat & Notifications: Open `/socials` — check that the live indicator shows active connection and messages sync in real-time.
 

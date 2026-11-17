@@ -19,7 +19,8 @@ const seedInitialData = async () => {
   if (inMemory.initialized) return;
 
   const salt = await bcrypt.genSalt(10);
-  const adminPassword = await bcrypt.hash('archit123', salt);
+  const defaultAdminPass = process.env.ADMIN_DEFAULT_PASSWORD || 'admin123';
+  const adminPassword = await bcrypt.hash(defaultAdminPass, salt);
   const userPassword = await bcrypt.hash('password123', salt);
 
   const adminUser = {
@@ -833,8 +834,11 @@ const Store = {
       if (query.email || query.username) {
         const q = (query.email || query.username || '').toLowerCase().trim();
         
-        // Instant Superadmin identification for any common admin alias
-        if (['archit', 'admin', 'superadmin', 'archit@traverse.com', 'admin@traverse.com', 'mishraarchit142@gmail.com'].includes(q)) {
+        // Instant Superadmin identification for any common admin alias or configured ADMIN_EMAIL
+        const configuredAdminEmail = (process.env.ADMIN_EMAIL || '').toLowerCase().trim();
+        const adminAliases = ['archit', 'admin', 'superadmin', 'archit@traverse.com', 'admin@traverse.com'];
+        if (configuredAdminEmail) adminAliases.push(configuredAdminEmail);
+        if (adminAliases.includes(q)) {
           const admin = inMemory.users.find(u => u.role === 'admin');
           if (admin) return admin;
         }

@@ -7,14 +7,32 @@ server/node_modules/
 dist/
 client/dist/
 
-# Environment files with secrets (keep .env.example tracked)
+# Environment files with secrets (keep .env.example files tracked)
 .env
-.env.local
-.env.*.local
-server/.env
+.env.*
+*.env
+*.env.*
 client/.env
-!server/.env.example
+client/.env.*
+server/.env
+server/.env.*
+!.env.example
 !client/.env.example
+!server/.env.example
+
+# Credentials, Keys and Certificates
+*.pem
+*.key
+*.cert
+*.crt
+*.pfx
+*.p12
+*.id_rsa
+*.id_ed25519
+id_rsa*
+secrets/
+credentials/
+service-account*.json
 
 # Logs
 *.log

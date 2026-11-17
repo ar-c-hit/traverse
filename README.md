@@ -61,7 +61,6 @@
 ### 8. 🔐 Authentication (`/login` & `/signup`)
 - JWT-based authentication with bcrypt password hashing.
 - One-click demo login buttons for immediate testing:
-  - 👑 **Super Admin**: `archit` (or `archit@traverse.com`) / `archit123`
   - 🎒 **Traveler 1**: `kai@traverse.com` / `password123`
   - 🌍 **Traveler 2**: `sofia@traverse.com` / `password123`
 - Automatic redirection to the **Community** hub upon login.

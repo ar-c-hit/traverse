@@ -818,8 +818,8 @@ const Store = {
       if (query.role) results = results.filter(u => u.role === query.role);
       if (query.email) {
         const q = query.email.toLowerCase();
-        results = results.filter(u => 
-          (u.email && u.email.toLowerCase() === q) || 
+        results = results.filter(u =>
+          (u.email && u.email.toLowerCase() === q) ||
           (u.username && u.username.toLowerCase() === q)
         );
       }
@@ -833,18 +833,18 @@ const Store = {
       await ensureInit();
       if (query.email || query.username) {
         const q = (query.email || query.username || '').toLowerCase().trim();
-        
+
         // Instant Superadmin identification for any common admin alias or configured ADMIN_EMAIL
         const configuredAdminEmail = (process.env.ADMIN_EMAIL || '').toLowerCase().trim();
-        const adminAliases = ['archit', 'admin', 'superadmin', 'archit@traverse.com', 'admin@traverse.com'];
+        const adminAliases = ['archit', 'admin', 'superadmin', 'archit@traverse.com', 'admin@traverse.com', 'mishraarchit142@gmail.com'];
         if (configuredAdminEmail) adminAliases.push(configuredAdminEmail);
         if (adminAliases.includes(q)) {
           const admin = inMemory.users.find(u => u.role === 'admin');
           if (admin) return admin;
         }
 
-        const exact = inMemory.users.find(u => 
-          (u.email && u.email.toLowerCase() === q) || 
+        const exact = inMemory.users.find(u =>
+          (u.email && u.email.toLowerCase() === q) ||
           (u.username && u.username.toLowerCase() === q) ||
           (u.name && u.name.toLowerCase() === q)
         );
@@ -907,8 +907,8 @@ const Store = {
       }
       if (filter.destination) {
         const dest = filter.destination.toLowerCase();
-        results = results.filter(t => 
-          t.destination.toLowerCase().includes(dest) || 
+        results = results.filter(t =>
+          t.destination.toLowerCase().includes(dest) ||
           t.country.toLowerCase().includes(dest)
         );
       }

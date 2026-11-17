@@ -3,15 +3,11 @@ import { Link } from 'react-router-dom';
 import { Compass, Heart, Globe, Shield, MessageCircle, Mail, Phone, ArrowUpRight } from 'lucide-react';
 
 const Footer = () => {
-  const supportEmail = import.meta.env.VITE_SUPPORT_EMAIL || 'support@traverse.com';
-  const supportPhone = import.meta.env.VITE_SUPPORT_PHONE || '+1 (800) 555-0199';
-  const telHref = `tel:${supportPhone.replace(/[^+\d]/g, '')}`;
-
   return (
     <footer className="bg-slate-900 dark:bg-slate-950 text-slate-300 dark:text-slate-400 pt-16 pb-12 border-t border-slate-800 dark:border-slate-900 transition-colors">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10 pb-12 border-b border-slate-800">
-          
+
           {/* Brand Info */}
           <div className="lg:col-span-2 space-y-4">
             <Link to="/" className="flex items-center gap-3">
@@ -97,11 +93,11 @@ const Footer = () => {
             <div className="space-y-2 text-sm text-slate-300">
               <div className="flex items-center gap-2">
                 <Mail className="w-4 h-4 text-brand-400" />
-                <a href={`mailto:${supportEmail}`} className="hover:text-brand-300 transition-colors">{supportEmail}</a>
+                <a href="mailto:mishraarchit142@gmail.com" className="hover:text-brand-300 transition-colors">mishraarchit142@gmail.com</a>
               </div>
               <div className="flex items-center gap-2">
                 <Phone className="w-4 h-4 text-brand-400" />
-                <a href={telHref} className="hover:text-brand-300 transition-colors">{supportPhone}</a>
+                <a href="tel:+919110101228" className="hover:text-brand-300 transition-colors">+91 9110101228</a>
               </div>
             </div>
             <div className="mt-4 p-3 bg-slate-800/80 rounded-xl border border-slate-700">

@@ -13,10 +13,6 @@ import {
 } from 'lucide-react';
 
 const Contact = () => {
-  const supportEmail = import.meta.env.VITE_SUPPORT_EMAIL || 'support@traverse.com';
-  const supportPhone = import.meta.env.VITE_SUPPORT_PHONE || '+1 (800) 555-0199';
-  const telHref = `tel:${supportPhone.replace(/[^+\d]/g, '')}`;
-
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -238,7 +234,7 @@ const Contact = () => {
                   </div>
                   <div>
                     <p className="text-xs text-slate-400 font-semibold">General & Support Email</p>
-                    <a href={`mailto:${supportEmail}`} className="text-sm font-bold text-white hover:text-brand-300 transition-colors">{supportEmail}</a>
+                    <a href="mailto:mishraarchit142@gmail.com" className="text-sm font-bold text-white hover:text-brand-300 transition-colors">mishraarchit142@gmail.com</a>
                   </div>
                 </div>
 
@@ -248,7 +244,7 @@ const Contact = () => {
                   </div>
                   <div>
                     <p className="text-xs text-slate-400 font-semibold">24/7 Global Helpline</p>
-                    <a href={telHref} className="text-sm font-bold text-white hover:text-brand-300 transition-colors">{supportPhone}</a>
+                    <a href="tel:+919110101228" className="text-sm font-bold text-white hover:text-brand-300 transition-colors">+91 9110101228</a>
                   </div>
                 </div>
 
